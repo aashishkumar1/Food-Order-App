@@ -10,14 +10,48 @@ const cartReducer = (state,action) => {
     switch(action.type)
     {
         case 'ADD':
-            const updatedItems  =  state.items.concat(action.item);
             const updatedTotalAmount = state.totalAmount + action.item.price * action.item.amount;
+
+            const existingCartItemIndex = state.items.findIndex(item => item.id === action.item.id)
+
+            const existingCartItem = state.items[existingCartItemIndex];
+            let updatedItems;
+            if(existingCartItem)
+            {
+                const updatedItem = {
+                    ...existingCartItem,
+                    amount: existingCartItem.amount + action.item.amount,
+                };
+                updatedItems = [...state.items];
+                updatedItems[existingCartItemIndex] = updatedItem;
+            }
+            else{
+                updatedItems  =  state.items.concat(action.item);
+            }
+            
             return {
                 items: updatedItems,
                 totalAmount: updatedTotalAmount
             }
         case "REMOVE":
-            return
+            const existingcartItemIndex = state.items.findIndex(item => item.id === action.id)
+            const existingItem = state.items[existingcartItemIndex];
+            const updatedtotalAmount = state.totalAmount - existingItem.price;
+            let updateditems;
+            if(existingItem.amount === 1)
+            {
+                updateditems = state.items.filter(item => item.id !== action.id);
+            }
+            else{
+                const updateditem = {...existingItem,amount:existingItem.amount-1};
+                updateditems = [...state.items];
+                updateditems[existingcartItemIndex] = updateditem;
+            }
+
+            return {
+                items: updateditems,
+                totalAmount: updatedtotalAmount
+            }
         default:
             return state;
     }
@@ -41,7 +75,7 @@ const CartProvider = (props) => {
         items: cartState.items,
         totalAmount: cartState.totalAmount,
         addItem: addItemToCartHandler,
-        removeItem: (id) => removeItemFromCartHandler
+        removeItem: removeItemFromCartHandler
     }
 
   return (
